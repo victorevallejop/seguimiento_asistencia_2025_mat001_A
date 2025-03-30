@@ -34,7 +34,7 @@
       white-space: nowrap;
     }
     th {
-      background-color: #007bff;
+      background-color: #0c4c7d;
       color: white;
       position: sticky;
       top: 0;
@@ -44,7 +44,7 @@
       position: sticky;
       left: 0;
       background: #f1f1f1;
-      z-index: 2;
+      z-index: 3;
     }
     th.sticky-col-2, td.sticky-col-2 {
       position: sticky;
@@ -66,31 +66,15 @@
       font-size: 11px;
       color: #666;
     }
-    .scroll-topbar {
-      overflow-x: auto;
-      margin-bottom: 5px;
-      min-height: 20px;
-      max-height: 20px;
-    }
-    .scroll-topbar::-webkit-scrollbar {
-      height: 10px;
-    }
-    .scroll-topbar table {
-      visibility: hidden;
-      margin: 0;
-      padding: 0;
-      height: 0;
-    }
     @media print {
       body { background: white; }
-      .footer, .scroll-topbar { display: none; }
+      .footer { display: none; }
       .tabla-wrapper { overflow: visible; }
     }
   </style>
 </head>
 <body>
   <h1>Informe de Asistencia del Curso</h1>
-  <div class="scroll-topbar" id="scrollTopBar"></div>
   <div class="tabla-wrapper" id="tablaWrapper">
     <table id="tablaAsistencia">
       <thead id="cabeceraTabla"></thead>
@@ -141,7 +125,6 @@
     function renderizarTabla(clases, estudiantes) {
       const cabecera = document.getElementById("cabeceraTabla");
       const cuerpo = document.getElementById("cuerpoTabla");
-      const scrollTopBar = document.getElementById("scrollTopBar");
 
       const trCabecera = document.createElement("tr");
       trCabecera.innerHTML = `<th class="sticky-col">Estudiante</th><th class="sticky-col-2">%</th>` +
@@ -155,22 +138,6 @@
         const celdasAsistencia = est.filtradas.map(a => `<td class="${a ? 'asistencia-si' : 'asistencia-no'}">${a ? '✔' : '✘'}</td>`).join("");
         tr.innerHTML = celdaNombre + celdaPorcentaje + celdasAsistencia;
         cuerpo.appendChild(tr);
-      });
-
-      // Duplicar barra para scroll superior sincronizado
-      const dummyTable = document.createElement("table");
-      dummyTable.innerHTML = cabecera.innerHTML;
-      scrollTopBar.innerHTML = "";
-      scrollTopBar.appendChild(dummyTable);
-
-      scrollTopBar.scrollLeft = 0;
-      document.getElementById("tablaWrapper").scrollLeft = 0;
-
-      scrollTopBar.addEventListener("scroll", () => {
-        document.getElementById("tablaWrapper").scrollLeft = scrollTopBar.scrollLeft;
-      });
-      document.getElementById("tablaWrapper").addEventListener("scroll", () => {
-        scrollTopBar.scrollLeft = document.getElementById("tablaWrapper").scrollLeft;
       });
     }
 
