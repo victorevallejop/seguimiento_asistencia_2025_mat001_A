@@ -68,8 +68,9 @@
     }
     .scroll-topbar {
       overflow-x: auto;
-      margin-bottom: 0;
-      height: 20px;
+      margin-bottom: 5px;
+      min-height: 20px;
+      max-height: 20px;
     }
     .scroll-topbar::-webkit-scrollbar {
       height: 10px;
@@ -78,6 +79,7 @@
       visibility: hidden;
       margin: 0;
       padding: 0;
+      height: 0;
     }
     @media print {
       body { background: white; }
