@@ -15,8 +15,9 @@
       text-align: center;
       margin-bottom: 20px;
     }
-    .tabla-container {
+    .tabla-wrapper {
       overflow-x: auto;
+      position: relative;
     }
     table {
       border-collapse: collapse;
@@ -30,6 +31,7 @@
       border: 1px solid #ddd;
       text-align: center;
       font-size: 12px;
+      white-space: nowrap;
     }
     th {
       background-color: #007bff;
@@ -38,10 +40,15 @@
       top: 0;
       z-index: 1;
     }
-    td:first-child, th:first-child {
-      text-align: left;
+    th.sticky-col, td.sticky-col {
       position: sticky;
       left: 0;
+      background: #f1f1f1;
+      z-index: 2;
+    }
+    th.sticky-col-2, td.sticky-col-2 {
+      position: sticky;
+      left: 160px;
       background: #f1f1f1;
       z-index: 2;
     }
@@ -59,23 +66,32 @@
       font-size: 11px;
       color: #666;
     }
+    .scroll-topbar {
+      overflow-x: auto;
+      margin-bottom: 5px;
+    }
+    .scroll-topbar::-webkit-scrollbar {
+      height: 10px;
+    }
+    .scroll-topbar table {
+      visibility: hidden;
+    }
     @media print {
       body { background: white; }
-      .footer { display: none; }
-      .tabla-container { overflow: visible; }
+      .footer, .scroll-topbar { display: none; }
+      .tabla-wrapper { overflow: visible; }
     }
   </style>
 </head>
 <body>
   <h1>Informe de Asistencia del Curso</h1>
-  <div class="tabla-container">
+  <div class="scroll-topbar" id="scrollTopBar">
+    <div style="width: 100%; height: 1px;"></div>
+  </div>
+  <div class="tabla-wrapper" id="tablaWrapper">
     <table id="tablaAsistencia">
-      <thead id="cabeceraTabla">
-        <!-- Se genera dinámicamente -->
-      </thead>
-      <tbody id="cuerpoTabla">
-        <!-- Se genera dinámicamente -->
-      </tbody>
+      <thead id="cabeceraTabla"></thead>
+      <tbody id="cuerpoTabla"></tbody>
     </table>
   </div>
   <div class="footer">Generado automáticamente desde Google Sheets</div>
@@ -85,31 +101,69 @@
       try {
         const response = await fetch("https://script.google.com/macros/s/AKfycbxC6wvdSALnSe8l5r7TgjYXewulfbPppLwBIf6l9_viIVMviEBt3nKUy9o6h6RNov5e/exec?action=asistenciaCurso");
         const data = await response.json();
-        renderizarTabla(data);
+
+        // Filtrar clases pasadas (basado en fecha actual)
+        const hoy = new Date();
+        const clasesFiltradas = [];
+        const indicesValidos = [];
+
+        data.clases.forEach((clase, i) => {
+          const fechaTexto = clase.split(" ")[0];
+          const [dia, mes] = fechaTexto.split("-");
+          const fechaClase = new Date(hoy.getFullYear(), parseInt(mes)-1, parseInt(dia));
+          if (fechaClase <= hoy) {
+            clasesFiltradas.push(clase);
+            indicesValidos.push(i);
+          }
+        });
+
+        // Ordenar estudiantes por Apellido Paterno, Materno, Nombres
+        data.estudiantes.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+
+        // Calcular % de asistencia considerando solo clases ya realizadas
+        data.estudiantes.forEach(est => {
+          let asistenciasValidas = indicesValidos.map(i => est.asistencias[i]);
+          let total = asistenciasValidas.filter(x => x).length;
+          let porcentaje = (total / clasesFiltradas.length) * 100;
+          est.filtradas = asistenciasValidas;
+          est.porcentaje = isNaN(porcentaje) ? "0%" : porcentaje.toFixed(1) + "%";
+        });
+
+        renderizarTabla(clasesFiltradas, data.estudiantes);
       } catch (error) {
         console.error("Error cargando los datos de asistencia:", error);
       }
     }
 
-    function renderizarTabla(data) {
+    function renderizarTabla(clases, estudiantes) {
       const cabecera = document.getElementById("cabeceraTabla");
       const cuerpo = document.getElementById("cuerpoTabla");
+      const scrollTopBar = document.getElementById("scrollTopBar");
 
-      // Cabecera
       const trCabecera = document.createElement("tr");
-      trCabecera.innerHTML = `<th>Estudiante</th>` +
-        data.clases.map(c => `<th>${c}</th>`).join("") +
-        `<th>%</th>`;
+      trCabecera.innerHTML = `<th class="sticky-col">Estudiante</th><th class="sticky-col-2">%</th>` +
+        clases.map(c => `<th>${c}</th>`).join("");
       cabecera.appendChild(trCabecera);
 
-      // Filas de estudiantes
-      data.estudiantes.forEach(est => {
+      estudiantes.forEach(est => {
         const tr = document.createElement("tr");
-        const celdaNombre = `<td>${est.nombre}</td>`;
-        const celdasAsistencia = est.asistencias.map(a => `<td class="${a ? 'asistencia-si' : 'asistencia-no'}">${a ? '✔' : '✘'}</td>`).join("");
-        const celdaPorcentaje = `<td><strong>${est.porcentaje}</strong></td>`;
-        tr.innerHTML = celdaNombre + celdasAsistencia + celdaPorcentaje;
+        const celdaNombre = `<td class="sticky-col">${est.nombre}</td>`;
+        const celdaPorcentaje = `<td class="sticky-col-2"><strong>${est.porcentaje}</strong></td>`;
+        const celdasAsistencia = est.filtradas.map(a => `<td class="${a ? 'asistencia-si' : 'asistencia-no'}">${a ? '✔' : '✘'}</td>`).join("");
+        tr.innerHTML = celdaNombre + celdaPorcentaje + celdasAsistencia;
         cuerpo.appendChild(tr);
+      });
+
+      // Duplicar barra para scroll superior sincronizado
+      scrollTopBar.innerHTML = document.getElementById("tablaWrapper").innerHTML;
+      scrollTopBar.scrollLeft = 0;
+      document.getElementById("tablaWrapper").scrollLeft = 0;
+
+      scrollTopBar.addEventListener("scroll", () => {
+        document.getElementById("tablaWrapper").scrollLeft = scrollTopBar.scrollLeft;
+      });
+      document.getElementById("tablaWrapper").addEventListener("scroll", () => {
+        scrollTopBar.scrollLeft = document.getElementById("tablaWrapper").scrollLeft;
       });
     }
 
