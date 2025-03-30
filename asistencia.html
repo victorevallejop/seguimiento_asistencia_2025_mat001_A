@@ -131,7 +131,7 @@ async function buscarEstudiante(emailParam = null) {
 
     try {
         // 📌 1️⃣ Hacer UNA sola petición a la API
-        const response = await fetch(`https://script.google.com/macros/s/AKfycbwOu7PFsT4qoewNI_P1gfXZ8y31Gk-ITGOGSLiaSuL-5C2kAct__MFzih5JNHyLpNAUOA/exec?email=${email}`);
+        const response = await fetch(`https://script.google.com/macros/s/AKfycbxC6wvdSALnSe8l5r7TgjYXewulfbPppLwBIf6l9_viIVMviEBt3nKUy9o6h6RNov5e/exec?email=${email}`);
         const data = await response.json();
         console.log("Datos recibidos:", data); // Depuración
 
