@@ -13,7 +13,7 @@
     }
     h1 {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
     .tabla-wrapper {
       overflow-x: auto;
@@ -68,13 +68,16 @@
     }
     .scroll-topbar {
       overflow-x: auto;
-      margin-bottom: 5px;
+      margin-bottom: 0;
+      height: 20px;
     }
     .scroll-topbar::-webkit-scrollbar {
       height: 10px;
     }
     .scroll-topbar table {
       visibility: hidden;
+      margin: 0;
+      padding: 0;
     }
     @media print {
       body { background: white; }
@@ -85,9 +88,7 @@
 </head>
 <body>
   <h1>Informe de Asistencia del Curso</h1>
-  <div class="scroll-topbar" id="scrollTopBar">
-    <div style="width: 100%; height: 1px;"></div>
-  </div>
+  <div class="scroll-topbar" id="scrollTopBar"></div>
   <div class="tabla-wrapper" id="tablaWrapper">
     <table id="tablaAsistencia">
       <thead id="cabeceraTabla"></thead>
@@ -155,7 +156,11 @@
       });
 
       // Duplicar barra para scroll superior sincronizado
-      scrollTopBar.innerHTML = document.getElementById("tablaWrapper").innerHTML;
+      const dummyTable = document.createElement("table");
+      dummyTable.innerHTML = cabecera.innerHTML;
+      scrollTopBar.innerHTML = "";
+      scrollTopBar.appendChild(dummyTable);
+
       scrollTopBar.scrollLeft = 0;
       document.getElementById("tablaWrapper").scrollLeft = 0;
 
