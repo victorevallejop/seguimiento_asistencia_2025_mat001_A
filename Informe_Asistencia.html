@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informe de Asistencia del Curso</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .tabla-container {
+      overflow-x: auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 1000px;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 12px;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    td:first-child, th:first-child {
+      text-align: left;
+      position: sticky;
+      left: 0;
+      background: #f1f1f1;
+      z-index: 2;
+    }
+    .asistencia-si {
+      color: green;
+      font-weight: bold;
+    }
+    .asistencia-no {
+      color: red;
+      font-weight: bold;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 11px;
+      color: #666;
+    }
+    @media print {
+      body { background: white; }
+      .footer { display: none; }
+      .tabla-container { overflow: visible; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Informe de Asistencia del Curso</h1>
+  <div class="tabla-container">
+    <table id="tablaAsistencia">
+      <thead id="cabeceraTabla">
+        <!-- Se genera dinámicamente -->
+      </thead>
+      <tbody id="cuerpoTabla">
+        <!-- Se genera dinámicamente -->
+      </tbody>
+    </table>
+  </div>
+  <div class="footer">Generado automáticamente desde Google Sheets</div>
+
+  <script>
+    async function cargarDatos() {
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycb.../exec?action=asistenciaCurso");
+        const data = await response.json();
+        renderizarTabla(data);
+      } catch (error) {
+        console.error("Error cargando los datos de asistencia:", error);
+      }
+    }
+
+    function renderizarTabla(data) {
+      const cabecera = document.getElementById("cabeceraTabla");
+      const cuerpo = document.getElementById("cuerpoTabla");
+
+      // Cabecera
+      const trCabecera = document.createElement("tr");
+      trCabecera.innerHTML = `<th>Estudiante</th>` +
+        data.clases.map(c => `<th>${c}</th>`).join("") +
+        `<th>%</th>`;
+      cabecera.appendChild(trCabecera);
+
+      // Filas de estudiantes
+      data.estudiantes.forEach(est => {
+        const tr = document.createElement("tr");
+        const celdaNombre = `<td>${est.nombre}</td>`;
+        const celdasAsistencia = est.asistencias.map(a => `<td class="${a ? 'asistencia-si' : 'asistencia-no'}">${a ? '✔' : '✘'}</td>`).join("");
+        const celdaPorcentaje = `<td><strong>${est.porcentaje}</strong></td>`;
+        tr.innerHTML = celdaNombre + celdasAsistencia + celdaPorcentaje;
+        cuerpo.appendChild(tr);
+      });
+    }
+
+    window.onload = cargarDatos;
+  </script>
+</body>
+</html>
