@@ -83,7 +83,7 @@
   <script>
     async function cargarDatos() {
       try {
-        const response = await fetch("https://script.google.com/macros/s/AKfycb.../exec?action=asistenciaCurso");
+        const response = await fetch("https://script.google.com/macros/s/AKfycbxC6wvdSALnSe8l5r7TgjYXewulfbPppLwBIf6l9_viIVMviEBt3nKUy9o6h6RNov5e/exec?action=asistenciaCurso");
         const data = await response.json();
         renderizarTabla(data);
       } catch (error) {
